@@ -18,7 +18,7 @@ namespace SuiviFinancier.Models
         [DataType(DataType.Currency)]
         public decimal Balance { get; set; }
 
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

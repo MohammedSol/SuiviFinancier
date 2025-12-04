@@ -217,3 +217,4 @@ C:\Users\user\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\EMS
 C:\Users\user\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\EMSI\S3\DOTNET\SuiviFin\obj\Debug\net9.0\SuiviFinancier.pdb
 C:\Users\user\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\EMSI\S3\DOTNET\SuiviFin\obj\Debug\net9.0\SuiviFinancier.genruntimeconfig.cache
 C:\Users\user\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\EMSI\S3\DOTNET\SuiviFin\obj\Debug\net9.0\ref\SuiviFinancier.dll
+C:\Users\user\OneDrive - Ecole Marocaine des Sciences de l'Ingénieur\Bureau\EMSI\S3\DOTNET\SuiviFin\obj\Debug\net9.0\SuiviFinancier.sourcelink.json

@@ -6,93 +6,100 @@ using System.Linq;
 
 namespace SuiviFinancier.Controllers
 {
-    public class AccountController : Controller
+    public class CategoryController : Controller
     {
         private readonly AppDbContext _context;
 
-        public AccountController(AppDbContext context)
+        public CategoryController(AppDbContext context)
         {
             _context = context;
         }
 
-        // --- LISTE ---
+        // --- LISTE (Index) ---
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Accounts.ToListAsync());
+            return View(await _context.Categories.ToListAsync());
         }
 
-        // --- CRÉER ---
+        // --- CRÉER (Create) ---
+        // GET: Affiche le formulaire
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Reçoit les données du formulaire
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Balance,Type")] Account account)
+        public async Task<IActionResult> Create([Bind("Id,Name,Type,Description")] Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(account);
+                _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(account);
+            return View(category);
         }
 
-        // --- MODIFIER ---
+        // --- MODIFIER (Edit) ---
+        // GET: Affiche le formulaire pré-rempli
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var account = await _context.Accounts.FindAsync(id);
-            if (account == null) return NotFound();
-            return View(account);
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null) return NotFound();
+
+            return View(category);
         }
 
+        // POST: Enregistre les modifications
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Balance,Type")] Account account)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Type,Description")] Category category)
         {
-            if (id != account.Id) return NotFound();
+            if (id != category.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(account);
+                    _context.Update(category);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Accounts.Any(e => e.Id == account.Id)) return NotFound();
+                    if (!_context.Categories.Any(e => e.Id == category.Id)) return NotFound();
                     else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(account);
+            return View(category);
         }
 
-        // --- SUPPRIMER ---
+        // --- SUPPRIMER (Delete) ---
+        // GET: Demande confirmation
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var account = await _context.Accounts
+            var category = await _context.Categories
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (account == null) return NotFound();
+            if (category == null) return NotFound();
 
-            return View(account);
+            return View(category);
         }
 
+        // POST: Confirme la suppression réelle
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var account = await _context.Accounts.FindAsync(id);
-            if (account != null)
+            var category = await _context.Categories.FindAsync(id);
+            if (category != null)
             {
-                _context.Accounts.Remove(account);
+                _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));

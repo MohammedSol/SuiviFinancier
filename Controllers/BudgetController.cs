@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using SuiviFinancier.Models;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace SuiviFinancier.Controllers
 {
@@ -12,94 +16,95 @@ namespace SuiviFinancier.Controllers
             _context = context;
         }
 
-        // GET: Budget
-        public IActionResult Index()
+        // --- LISTE ---
+        public async Task<IActionResult> Index()
         {
-            return View();
+            // On inclut la catégorie pour afficher son nom
+            var budgets = _context.Budgets.Include(b => b.Category);
+            return View(await budgets.ToListAsync());
         }
 
-        // GET: Budget/Create
+        // --- CRÉER ---
         public IActionResult Create()
         {
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
             return View();
         }
 
-        // POST: Budget/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Budget budget)
+        public async Task<IActionResult> Create([Bind("Id,Name,Amount,StartDate,EndDate,CategoryId")] Budget budget)
         {
             if (ModelState.IsValid)
             {
-                _context.Budgets.Add(budget);
-                _context.SaveChanges();
+                budget.CreatedAt = DateTime.Now;
+                _context.Add(budget);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", budget.CategoryId);
             return View(budget);
         }
 
-        // GET: Budget/Edit/5
-        public IActionResult Edit(int? id)
+        // --- MODIFIER ---
+        public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var budget = _context.Budgets.Find(id);
-            if (budget == null)
-            {
-                return NotFound();
-            }
+            var budget = await _context.Budgets.FindAsync(id);
+            if (budget == null) return NotFound();
+
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", budget.CategoryId);
             return View(budget);
         }
 
-        // POST: Budget/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Budget budget)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Amount,StartDate,EndDate,CategoryId")] Budget budget)
         {
-            if (id != budget.Id)
-            {
-                return NotFound();
-            }
+            if (id != budget.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.Update(budget);
-                _context.SaveChanges();
+                try
+                {
+                    budget.CreatedAt = DateTime.Now;
+                    _context.Update(budget);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Budgets.Any(e => e.Id == budget.Id)) return NotFound();
+                    else throw;
+                }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", budget.CategoryId);
             return View(budget);
         }
 
-        // GET: Budget/Delete/5
-        public IActionResult Delete(int? id)
+        // --- SUPPRIMER ---
+        public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var budget = _context.Budgets.Find(id);
-            if (budget == null)
-            {
-                return NotFound();
-            }
+            var budget = await _context.Budgets
+                .Include(b => b.Category)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (budget == null) return NotFound();
 
             return View(budget);
         }
 
-        // POST: Budget/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var budget = _context.Budgets.Find(id);
+            var budget = await _context.Budgets.FindAsync(id);
             if (budget != null)
             {
                 _context.Budgets.Remove(budget);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
         }

@@ -1,8 +1,132 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model SuiviFinancier.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Tableau de Bord";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container">
+    <h1 class="mb-4">Tableau de Bord Financier</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Solde Total</h5>
+                    <h2 class="card-text">@Model.TotalBalance.ToString("C")</h2>
+                    <small>Sur tous vos comptes</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus (Ce mois)</h5>
+                    <h2 class="card-text">+@Model.IncomeThisMonth.ToString("C")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger shadow h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Dépenses (Ce mois)</h5>
+                    <h2 class="card-text">-@Model.ExpenseThisMonth.ToString("C")</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition des Dépenses</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.ExpenseCategoryData.Length > 0)
+                    {
+                        <canvas id="expenseChart"></canvas>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Aucune dépense ce mois-ci à afficher.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Dernières Activités</h6>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <tbody>
+                            @foreach (var item in Model.RecentTransactions)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.Description</strong><br />
+                                        <small class="text-muted">@item.Date.ToShortDateString()</small>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (item.Category?.Type == "Revenu")
+                                        {
+                                            <span class="text-success fw-bold">+@item.Amount.ToString("C")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger fw-bold">-@item.Amount.ToString("C")</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer text-center">
+                    <a asp-controller="Transaction" asp-action="Index" class="btn btn-sm btn-primary">Voir tout</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+    // On attend que la page soit chargée
+    document.addEventListener("DOMContentLoaded", function() {
+        var ctx = document.getElementById('expenseChart');
+        
+        // Si l'élément canvas existe (donc s'il y a des données)
+        if (ctx) {
+            // Récupération des données envoyées par C# (Sérialisation en JSON)
+            var labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpenseCategoryLabels));
+            var data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExpenseCategoryData));
+
+            var myChart = new Chart(ctx, {
+                type: 'doughnut', // Type: 'pie', 'bar', 'line', 'doughnut'
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Dépenses',
+                        data: data,
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>

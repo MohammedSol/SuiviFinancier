@@ -1,0 +1,43 @@
+@model IEnumerable<SuiviFinancier.Models.Budget>
+
+@{
+    ViewData["Title"] = "Mes Budgets";
+}
+
+<h1>Mes Budgets</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Définir un nouveau budget</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Catégorie Ciblée</th>
+            <th>Montant Maximum</th>
+            <th>Période</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@item.Name</td>
+            <td>
+                <strong>@item.Category?.Name</strong>
+            </td>
+            <td>
+                @item.Amount.ToString("C")
+            </td>
+            <td>
+                @item.StartDate.ToString("dd/MM/yyyy") - @item.EndDate.ToString("dd/MM/yyyy")
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Modifier</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Supprimer</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

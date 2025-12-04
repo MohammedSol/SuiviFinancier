@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SuiviFinancier")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4776ad576983d61c23a4ff0d92dcf21c3737f4d0")]
 [assembly: System.Reflection.AssemblyProductAttribute("SuiviFinancier")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SuiviFinancier")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

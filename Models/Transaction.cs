@@ -22,8 +22,8 @@ namespace SuiviFinancier.Models
         [StringLength(20)]
         public string Type { get; set; } = string.Empty; // Income or Expense
 
-        public int AccountId { get; set; }
-        public int CategoryId { get; set; }
+        public int? AccountId { get; set; }
+        public int? CategoryId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
