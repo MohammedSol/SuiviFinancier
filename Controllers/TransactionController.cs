@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SuiviFinancier.Models;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
 
 namespace SuiviFinancier.Controllers
 {
@@ -146,6 +147,50 @@ namespace SuiviFinancier.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // --- EXPORT CSV ---
+        public async Task<IActionResult> Export()
+        {
+            // 1. Récupérer toutes les transactions
+            var transactions = await _context.Transactions
+                .Include(t => t.Category)
+                .Include(t => t.Account)
+                .OrderByDescending(t => t.Date)
+                .ToListAsync();
+
+            // 2. Créer le contenu du fichier (StringBuilder est très rapide pour ça)
+            var builder = new StringBuilder();
+
+            // 3. Ajouter la ligne d'en-tête (Les titres des colonnes)
+            // On utilise le point-virgule ";" pour la compatibilité Excel FR
+            builder.AppendLine("Date;Description;Catégorie;Compte;Type;Montant");
+
+            // 4. Parcourir les données et ajouter les lignes
+            foreach (var t in transactions)
+            {
+                // On prépare les données (gestion des nulls avec "?")
+                var date = t.Date.ToShortDateString();
+                var description = t.Description?.Replace(";", ",").Replace("\r", " ").Replace("\n", " ") ?? "";
+                var categorie = t.Category?.Name ?? "Aucune";
+                var compte = t.Account?.Name ?? "Aucun";
+                var type = t.Category?.Type ?? "N/A";
+                
+                // Pour le montant : positif si revenu, négatif si dépense
+                // On force le format numérique français (avec virgule)
+                decimal montantReel = t.Amount;
+                if (type == "Depense") montantReel = -t.Amount;
+                else if (type == "Revenu") montantReel = t.Amount;
+
+                // On écrit la ligne
+                builder.AppendLine($"{date};{description};{categorie};{compte};{type};{montantReel}");
+            }
+
+            // 5. Renvoyer le fichier au navigateur
+            // L'encodage UTF-8 avec Preamble permet à Excel de reconnaître les accents
+            return File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(builder.ToString())).ToArray(), 
+                        "text/csv", 
+                        $"Transactions_{DateTime.Now:yyyyMMdd_HHmm}.csv");
         }
     }
 }
