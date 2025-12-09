@@ -5,16 +5,20 @@ using SuiviFinancier.Models;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
+using System.IO;
+using Microsoft.AspNetCore.Hosting; // Pour accéder à wwwroot
 
 namespace SuiviFinancier.Controllers
 {
     public class TransactionController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _hostEnvironment; // Pour savoir où est wwwroot
 
-        public TransactionController(AppDbContext context)
+        public TransactionController(AppDbContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            _hostEnvironment = hostEnvironment;
         }
 
         // --- LISTE ---
@@ -40,10 +44,38 @@ namespace SuiviFinancier.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Description,Amount,Date,Type,CategoryId,AccountId")] Transaction transaction)
+        public async Task<IActionResult> Create([Bind("Id,Description,Amount,Date,Type,CategoryId,AccountId,ReceiptFile")] Transaction transaction)
         {
             if (ModelState.IsValid)
             {
+                // --- LOGIQUE D'UPLOAD DE FICHIER ---
+                if (transaction.ReceiptFile != null)
+                {
+                    // 1. Définir le dossier de destination (wwwroot/uploads)
+                    string wwwRootPath = _hostEnvironment.WebRootPath;
+                    string fileName = Path.GetFileNameWithoutExtension(transaction.ReceiptFile.FileName);
+                    string extension = Path.GetExtension(transaction.ReceiptFile.FileName);
+                    
+                    // 2. Créer un nom unique (NomFichier + Date + Extension)
+                    fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
+                    
+                    // 3. Créer le dossier s'il n'existe pas
+                    string path = Path.Combine(wwwRootPath + "/uploads/");
+                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+                    string fullPath = Path.Combine(path + fileName);
+
+                    // 4. Copier le fichier
+                    using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                    {
+                        await transaction.ReceiptFile.CopyToAsync(fileStream);
+                    }
+
+                    // 5. Sauvegarder le chemin relatif dans la base
+                    transaction.ReceiptPath = "/uploads/" + fileName;
+                }
+                // ------------------------------------
+
                 // 1. On enregistre la transaction (Comme avant)
                 _context.Add(transaction);
 

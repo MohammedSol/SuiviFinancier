@@ -29,7 +29,7 @@ namespace SuiviFinancier.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Balance,Type")] Account account)
+        public async Task<IActionResult> Create([Bind("Id,Name,Balance,Type,AccountNumber,Currency,TargetAmount")] Account account)
         {
             if (ModelState.IsValid)
             {
@@ -52,7 +52,7 @@ namespace SuiviFinancier.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Balance,Type")] Account account)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Balance,Type,AccountNumber,Currency,TargetAmount")] Account account)
         {
             if (id != account.Id) return NotFound();
 

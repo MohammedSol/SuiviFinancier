@@ -31,7 +31,7 @@ namespace SuiviFinancier.Controllers
         // POST: Reçoit les données du formulaire
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Type,Description")] Category category)
+        public async Task<IActionResult> Create([Bind("Id,Name,Type,Description,Icon,Color")] Category category)
         {
             if (ModelState.IsValid)
             {
@@ -57,7 +57,7 @@ namespace SuiviFinancier.Controllers
         // POST: Enregistre les modifications
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Type,Description")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Type,Description,Icon,Color")] Category category)
         {
             if (id != category.Id) return NotFound();
 

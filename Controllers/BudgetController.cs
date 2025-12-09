@@ -7,6 +7,20 @@ using System.Linq;
 
 namespace SuiviFinancier.Controllers
 {
+    // ViewModel pour enrichir les données du Budget
+    public class BudgetViewModel
+    {
+        public int Id { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
+        public string CategoryIcon { get; set; } = string.Empty; // Pour le visuel
+        public string CategoryColor { get; set; } = string.Empty;
+        public decimal LimitAmount { get; set; }
+        public decimal SpentAmount { get; set; }
+        
+        public decimal RemainingAmount => LimitAmount - SpentAmount;
+        public int Percentage => LimitAmount == 0 ? 0 : (int)((SpentAmount / LimitAmount) * 100);
+    }
+
     public class BudgetController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,9 +33,42 @@ namespace SuiviFinancier.Controllers
         // --- LISTE ---
         public async Task<IActionResult> Index()
         {
-            // On inclut la catégorie pour afficher son nom
-            var budgets = _context.Budgets.Include(b => b.Category);
-            return View(await budgets.ToListAsync());
+            // 1. Définir la période (Ce mois-ci)
+            var startDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            
+            // 2. Récupérer tous les budgets
+            var budgets = await _context.Budgets.Include(b => b.Category).ToListAsync();
+            
+            // 3. Récupérer toutes les dépenses du mois (en une seule requête pour la performance)
+            var transactions = await _context.Transactions
+                .Include(t => t.Category)
+                .Where(t => t.Date >= startDate && t.Date <= endDate)
+                .ToListAsync();
+
+            // 4. Construire la liste enrichie
+            var budgetList = new List<BudgetViewModel>();
+
+            foreach (var b in budgets)
+            {
+                // Somme des dépenses pour CETTE catégorie (filtrer par Type Depense)
+                var spent = transactions
+                    .Where(t => t.CategoryId == b.CategoryId && t.Category != null && t.Category.Type == "Depense")
+                    .Sum(t => t.Amount);
+
+                budgetList.Add(new BudgetViewModel
+                {
+                    Id = b.Id,
+                    CategoryName = b.Category?.Name ?? "Sans catégorie",
+                    CategoryIcon = b.Category?.Icon ?? "bi-tag",
+                    CategoryColor = b.Category?.Color ?? "#6c757d",
+                    LimitAmount = b.Amount,
+                    SpentAmount = spent
+                });
+            }
+
+            // 5. Trier par "Urgence" (Ceux qui sont le plus proche de la limite en premier)
+            return View(budgetList.OrderByDescending(b => b.Percentage));
         }
 
         // --- CRÉER ---

@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; // Nécessaire pour [NotMapped]
+using Microsoft.AspNetCore.Http; // Nécessaire pour IFormFile
 
 namespace SuiviFinancier.Models
 {
@@ -26,6 +28,16 @@ namespace SuiviFinancier.Models
         public int? CategoryId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // --- NOUVEAU : GESTION DES FICHIERS ---
+
+        // 1. Stocke le chemin d'accès (ex: "/uploads/mon-recu.jpg")
+        [StringLength(500)]
+        public string? ReceiptPath { get; set; }
+
+        // 2. Reçoit le fichier envoyé par le formulaire (Pas stocké en Base)
+        [NotMapped]
+        public IFormFile? ReceiptFile { get; set; }
 
         // Navigation properties
         public Account? Account { get; set; }

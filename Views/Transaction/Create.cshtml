@@ -9,7 +9,7 @@
     <hr />
     <div class="row">
         <div class="col-md-6">
-            <form asp-action="Create">
+            <form asp-action="Create" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <div class="form-group mb-3">
@@ -53,6 +53,14 @@
                     <select asp-for="AccountId" class="form-control" asp-items="ViewBag.AccountId">
                         <option value="">-- Sélectionner un compte --</option>
                     </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="ReceiptFile" class="form-label fw-bold">
+                        <i class="bi bi-paperclip"></i> Justificatif (Reçu/Facture)
+                    </label>
+                    <input asp-for="ReceiptFile" class="form-control" type="file" accept="image/*,.pdf" />
+                    <small class="text-muted">Format: Image (JPG, PNG) ou PDF.</small>
                 </div>
 
                 <div class="form-group">
