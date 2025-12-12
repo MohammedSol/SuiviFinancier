@@ -31,7 +31,7 @@ namespace SuiviFinancier.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Users.Add(user);
+                _context.AppUsers.Add(user);
                 _context.SaveChanges();
                 return RedirectToAction(nameof(Index));
             }
@@ -46,7 +46,7 @@ namespace SuiviFinancier.Controllers
                 return NotFound();
             }
 
-            var user = _context.Users.Find(id);
+            var user = _context.AppUsers.Find(id);
             if (user == null)
             {
                 return NotFound();
@@ -81,7 +81,7 @@ namespace SuiviFinancier.Controllers
                 return NotFound();
             }
 
-            var user = _context.Users.Find(id);
+            var user = _context.AppUsers.Find(id);
             if (user == null)
             {
                 return NotFound();
@@ -95,10 +95,10 @@ namespace SuiviFinancier.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var user = _context.Users.Find(id);
+            var user = _context.AppUsers.Find(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
+                _context.AppUsers.Remove(user);
                 _context.SaveChanges();
             }
             return RedirectToAction(nameof(Index));

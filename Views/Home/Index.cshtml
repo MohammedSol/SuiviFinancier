@@ -90,6 +90,29 @@
         </div>
     </div>
 
+    <!-- NOUVEAU : Graphique de Prévision du Solde -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-info text-white">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="bi bi-graph-up-arrow"></i> Prévision du Solde Net Cumulé (ML.NET + Mathématique)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="forecastChart"></canvas>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            La partie <strong class="text-primary">pleine</strong> représente l'historique réel, 
+                            la partie <strong class="text-secondary">pointillée</strong> est la prévision jusqu'à la fin de la période.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow h-100">
@@ -253,6 +276,95 @@
                     scales: {
                         y: {
                             beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- NOUVEAU GRAPHIQUE DE PRÉVISION (Solde Cumulé avec Prévision ML.NET) ---
+        var ctx3 = document.getElementById('forecastChart');
+        if (ctx3) {
+            var forecastChart = new Chart(ctx3, {
+                type: 'line', 
+                data: {
+                    // Utilise les labels historiques ET futurs
+                    labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CumulativeChartLabels)), 
+                    datasets: [
+                        {
+                            label: 'Solde Net Cumulé (Historique & Prévision)',
+                            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CumulativeBalanceData)),
+                            borderColor: '#4e73df', 
+                            backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 3,
+                            
+                            // --- LA MAGIE DE LA PRÉVISION : Changement de style en milieu de courbe ---
+                            segment: {
+                                // Fonction qui s'applique à chaque segment de la ligne
+                                borderDash: (ctx) => {
+                                    const index = ctx.p0DataIndex;
+                                    const forecastStart = @Model.ForecastStartIndex; // Récupère l'index du début de la prévision
+                                    // Si l'index est égal ou supérieur au point de départ, on met des pointillés
+                                    return index >= forecastStart ? [5, 5] : undefined; 
+                                },
+                                // Changement de couleur pour le futur
+                                borderColor: (ctx) => {
+                                    const index = ctx.p0DataIndex;
+                                    const forecastStart = @Model.ForecastStartIndex;
+                                    return index >= forecastStart ? '#adb5bd' : '#4e73df'; // Gris pour le futur, Bleu pour le passé
+                                }
+                            }
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    // Ajoute "(Prévision)" dans la bulle d'aide pour les points futurs
+                                    if (context.dataIndex >= @Model.ForecastStartIndex) {
+                                        label += 'Prévision : ';
+                                    } else {
+                                        label += 'Historique : ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        // Formatte la devise (MAD pour Maroc)
+                                        label += context.parsed.y.toFixed(2) + ' MAD';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: { 
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: { 
+                                display: true, 
+                                text: 'Solde Net Cumulé (MAD)' 
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2) + ' MAD';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
                         }
                     }
                 }

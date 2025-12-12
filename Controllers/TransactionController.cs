@@ -2,23 +2,26 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SuiviFinancier.Models;
+using SuiviFinancier.ML;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Microsoft.AspNetCore.Hosting; // Pour accéder à wwwroot
+using Microsoft.AspNetCore.Hosting;
 
 namespace SuiviFinancier.Controllers
 {
     public class TransactionController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly IWebHostEnvironment _hostEnvironment; // Pour savoir où est wwwroot
+        private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly CategoryPredictorService _predictorService;
 
-        public TransactionController(AppDbContext context, IWebHostEnvironment hostEnvironment)
+        public TransactionController(AppDbContext context, IWebHostEnvironment hostEnvironment, CategoryPredictorService predictorService)
         {
             _context = context;
             _hostEnvironment = hostEnvironment;
+            _predictorService = predictorService;
         }
 
         // --- LISTE ---
@@ -223,6 +226,35 @@ namespace SuiviFinancier.Controllers
             return File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(builder.ToString())).ToArray(), 
                         "text/csv", 
                         $"Transactions_{DateTime.Now:yyyyMMdd_HHmm}.csv");
+        }
+
+        // --- API DE SUGGESTION DE CATÉGORIE ---
+        [HttpGet]
+        public IActionResult SuggestCategory(string title)
+        {
+            if (string.IsNullOrEmpty(title))
+            {
+                return Json(new { success = false, message = "Titre vide." });
+            }
+
+            try
+            {
+                // Essayer de charger et utiliser le modèle
+                string predictedCategoryName = _predictorService.PredictCategory(title);
+
+                return Json(new { 
+                    success = true, 
+                    suggestedCategory = predictedCategoryName 
+                });
+            }
+            catch (FileNotFoundException)
+            {
+                return Json(new { success = false, message = "Le modèle ML n'a pas encore été entraîné." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Erreur du moteur de prédiction: " + ex.Message });
+            }
         }
     }
 }

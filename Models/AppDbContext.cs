@@ -1,14 +1,18 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace SuiviFinancier.Models
 {
-    public class AppDbContext : DbContext
+    // On hérite de IdentityDbContext pour inclure les tables utilisateurs
+    public class AppDbContext : IdentityDbContext<IdentityUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        // Renamed from Users to AppUsers to avoid conflict with IdentityDbContext.Users
+        public DbSet<User> AppUsers { get; set; }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Transaction> Transactions { get; set; }

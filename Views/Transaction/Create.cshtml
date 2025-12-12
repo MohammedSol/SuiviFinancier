@@ -20,7 +20,13 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="Description" class="control-label">Description</label>
-                    <input asp-for="Description" class="form-control" placeholder="Ex: Courses Carrefour" />
+                    <div class="input-group">
+                        <input asp-for="Description" class="form-control" id="transactionTitle" placeholder="Ex: Courses Carrefour" />
+                        
+                        <button class="btn btn-outline-info" type="button" id="suggestCategoryButton" title="Suggérer la catégorie">
+                            <i class="bi bi-magic"></i>
+                        </button>
+                    </div>
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
 
@@ -43,7 +49,7 @@
 
                 <div class="form-group mb-3">
                     <label asp-for="CategoryId" class="control-label">Catégorie</label>
-                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
+                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId" id="categoryDropdown">
                         <option value="">-- Sélectionner une catégorie --</option>
                     </select>
                 </div>
@@ -74,4 +80,61 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function () {
+            // L'événement se déclenche quand on clique sur le bouton Magique
+            $('#suggestCategoryButton').click(function () {
+                suggestCategory();
+            });
+
+            function suggestCategory() {
+                var title = $('#transactionTitle').val();
+                var button = $('#suggestCategoryButton');
+                var dropdown = $('#categoryDropdown');
+
+                if (title.length < 3) {
+                    Swal.fire('Info', 'Entrez une description plus longue pour la prédiction.', 'info');
+                    return;
+                }
+
+                // Afficher un spinner pendant le chargement
+                button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span>');
+
+                // Appel AJAX vers notre nouvelle API C#
+                $.ajax({
+                    url: '@Url.Action("SuggestCategory", "Transaction")',
+                    type: 'GET',
+                    data: { title: title },
+                    success: function (response) {
+                        button.prop('disabled', false).html('<i class="bi bi-magic"></i>');
+
+                        if (response.success && response.suggestedCategory) {
+                            var suggestedName = response.suggestedCategory;
+                            
+                            // 1. Chercher l'option dans la liste déroulante qui correspond au nom
+                            var optionToSelect = dropdown.find('option').filter(function () {
+                                // On compare le texte de l'option (le nom de la catégorie)
+                                return $(this).text().trim() === suggestedName;
+                            }).first();
+
+                            if (optionToSelect.length) {
+                                // 2. Si on la trouve, on sélectionne son ID (sa valeur)
+                                dropdown.val(optionToSelect.val()); 
+                                Swal.fire('Succès!', 'Catégorie suggérée : ' + suggestedName, 'success');
+                            } else {
+                                Swal.fire('Alerte', 'Catégorie prédite "' + suggestedName + '" non trouvée dans la liste !', 'warning');
+                            }
+                        } else {
+                            Swal.fire('Erreur', response.message || 'La prédiction a échoué.', 'error');
+                        }
+                    },
+                    error: function () {
+                        button.prop('disabled', false).html('<i class="bi bi-magic"></i>');
+                        Swal.fire('Erreur', 'Erreur de connexion au serveur.', 'error');
+                    }
+                });
+            }
+        });
+    </script>
 }

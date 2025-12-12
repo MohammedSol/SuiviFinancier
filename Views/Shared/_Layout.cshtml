@@ -14,69 +14,73 @@
     <header>
         <nav class="navbar navbar-dark bg-primary box-shadow mb-3">
             <div class="container-fluid">
-                <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                    <span class="navbar-toggler-icon"></span>
-                    <span class="ms-2 fw-bold">Menu</span>
-                </button>
                 
-                <a class="navbar-brand fw-bold mx-auto" asp-area="" asp-controller="Home" asp-action="Index">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <button class="navbar-toggler border-0 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                        <span class="navbar-toggler-icon"></span>
+                        <span class="ms-2 fw-bold d-none d-md-inline">Menu</span>
+                    </button>
+                }
+
+                <a class="navbar-brand fw-bold me-auto" asp-area="" asp-controller="Home" asp-action="Index">
                     <i class="bi bi-wallet2"></i> Suivi Financier
                 </a>
 
-                <div style="width: 80px;"></div>
+                <div class="d-flex align-items-center">
+                    <partial name="_LoginPartial" />
+                </div>
             </div>
         </nav>
 
-        <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-            <div class="offcanvas-header border-bottom border-secondary">
-                <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
-                    <i class="bi bi-speedometer2"></i> Navigation
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header border-bottom border-secondary">
+                    <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
+                        <i class="bi bi-speedometer2"></i> Navigation
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                        
+                        <li class="nav-item mb-2">
+                            <a class="nav-link fs-5 text-white" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-2"></i> Tableau de Bord
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mb-2">
+                            <a class="nav-link fs-5 text-white" asp-controller="Transaction" asp-action="Index">
+                                <i class="bi bi-arrow-left-right me-2"></i> Transactions
+                            </a>
+                        </li>
+
+                        <li class="nav-item mb-2">
+                            <a class="nav-link fs-5 text-white" asp-controller="Category" asp-action="Index">
+                                <i class="bi bi-tags me-2"></i> Catégories
+                            </a>
+                        </li>
+
+                        <li class="nav-item mb-2">
+                            <a class="nav-link fs-5 text-white" asp-controller="Account" asp-action="Index">
+                                <i class="bi bi-bank me-2"></i> Comptes
+                            </a>
+                        </li>
+
+                        <li class="nav-item mb-2">
+                            <a class="nav-link fs-5 text-white" asp-controller="Budget" asp-action="Index">
+                                <i class="bi bi-piggy-bank me-2"></i> Budgets
+                            </a>
+                        </li>
+
+                        <hr class="border-secondary my-3">
+
+                    </ul>
+                </div>
             </div>
-            <div class="offcanvas-body">
-                <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                    
-                    <li class="nav-item mb-2">
-                        <a class="nav-link fs-5 text-white" asp-controller="Home" asp-action="Index">
-                            <i class="bi bi-house-door me-2"></i> Tableau de Bord
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item mb-2">
-                        <a class="nav-link fs-5 text-white" asp-controller="Transaction" asp-action="Index">
-                            <i class="bi bi-arrow-left-right me-2"></i> Transactions
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <a class="nav-link fs-5 text-white" asp-controller="Category" asp-action="Index">
-                            <i class="bi bi-tags me-2"></i> Catégories
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <a class="nav-link fs-5 text-white" asp-controller="Account" asp-action="Index">
-                            <i class="bi bi-bank me-2"></i> Comptes
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <a class="nav-link fs-5 text-white" asp-controller="Budget" asp-action="Index">
-                            <i class="bi bi-piggy-bank me-2"></i> Budgets
-                        </a>
-                    </li>
-
-                    <hr class="border-secondary my-3">
-
-                    <li class="nav-item">
-                        <a class="nav-link text-muted" asp-controller="Home" asp-action="Privacy">
-                            <i class="bi bi-shield-lock me-2"></i> Confidentialité
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        }
     </header>
     <div class="container">
         <main role="main" class="pb-3">

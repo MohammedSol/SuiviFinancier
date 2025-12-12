@@ -33,6 +33,17 @@ namespace SuiviFinancier.Models
 
         // --- NOUVEAU : La liste des statuts budgétaires ---
         public List<BudgetStatus> BudgetStatuses { get; set; } = new List<BudgetStatus>();
+
+        // --- NOUVEAU : Propriétés pour le Graphique de Prévision ---
+        
+        // 1. Labels de l'axe X (Historique + Prévision)
+        public string[] CumulativeChartLabels { get; set; } = Array.Empty<string>();
+        
+        // 2. Données de la courbe (Historique + Prévision)
+        public decimal[] CumulativeBalanceData { get; set; } = Array.Empty<decimal>();
+        
+        // 3. L'index où commence la partie Prévision (pour le JS)
+        public int ForecastStartIndex { get; set; }
     }
 
     // Nouvelle classe utilitaire simple
